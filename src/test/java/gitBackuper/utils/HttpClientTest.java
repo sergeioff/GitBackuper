@@ -16,12 +16,12 @@ public class HttpClientTest {
 
     @Test
     public void testHttpRequest() {
-        Assert.assertTrue(HttpClient.makeRequest("https://api.github.com").length() > 0);
+        Assert.assertTrue(HttpClient.makeGetRequest("https://api.github.com").length() > 0);
     }
 
     @Test
     public void httpRequestWillFail() {
-        HttpClient.makeRequest("asfasfasf");
+        HttpClient.makeGetRequest("asfasfasf");
         Assert.assertTrue(errStream.toString().contains("Failed to get"));
     }
 }
