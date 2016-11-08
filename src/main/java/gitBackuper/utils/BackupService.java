@@ -10,9 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 public class BackupService {
     private final String PATH_TO_BACKUPS_FILE = ".backups";
+    private final String DIRECTORY_FOR_BACKUPS = ".Backups";
 
     private BackupsList backups;
 
@@ -44,18 +46,87 @@ public class BackupService {
         }
     }
 
-    public void makeBackupOfRepository(Repository repository) {
-        Backup backup = new Backup();
+    public boolean isBackupExists(Repository repository) {
+        List<Backup> existingBackups = backups.getBackups(repository.getName());
+
+        if (existingBackups != null) {
+            for (Backup backup : existingBackups) {
+                if (backup.getPushedAt().equalsIgnoreCase(repository.getPushedAt())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void makeBackupOfRepository(Repository repository) throws IOException {
+        Path backupsDirectory = Paths.get(DIRECTORY_FOR_BACKUPS);
+
+        if (Files.notExists(backupsDirectory)) {
+            Files.createDirectory(backupsDirectory);
+        }
+
+        String repositoryName = repository.getName();
+
+        Backup backup = new Backup(repositoryName, repository.getPushedAt());
         List<ContentFile> contentFiles = repository.getContentFiles();
+
         for (ContentFile contentFile : contentFiles) {
-            Path filePath = Paths.get(repository.getName() + "/" + contentFile.getPath());
+            if (backups.getBackups(repositoryName) != null) {
+                File backupedFile = getBackupedFile(repositoryName, contentFile);
+
+                if (backupedFile != null) {
+                    backup.addFile(contentFile, backupedFile);
+                    continue;
+                }
+            }
+
+            Path filePath = Paths.get(backupsDirectory + "/" +
+                    repositoryName + "/" +
+                    repository.getPushedAt() + "/" +
+                    contentFile.getPath());
 
             FileDownloader.downloadFile(contentFile.getDownloadUrl(), filePath);
             backup.addFile(contentFile, filePath.toFile());
         }
 
-        backups.addBackup(repository.getName(), backup);
+        backups.addBackup(repositoryName, backup);
 
         saveBackups();
+    }
+
+/*    private boolean isFileAlreadyBackuped(String repository, ContentFile contentFile) {
+        List<Backup> olderBackups = backups.getBackups(repository);
+
+        for (Backup backup : olderBackups) {
+            for (ContentFile fileFromBackup : backup.getFiles().keySet()) {
+                if ((contentFile.getPath().equals(fileFromBackup.getPath())) &&
+                        (fileFromBackup.getSha().equals(contentFile.getSha()))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }*/
+
+    private File getBackupedFile(String repository, ContentFile contentFile) {
+        List<Backup> olderBackups = backups.getBackups(repository);
+
+        for (Backup backup : olderBackups) {
+            for (ContentFile fileFromBackup : backup.getFiles().keySet()) {
+                if ((contentFile.getPath().equals(fileFromBackup.getPath())) &&
+                        (fileFromBackup.getSha().equals(contentFile.getSha()))) {
+                    return backup.getFiles().get(fileFromBackup);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public BackupsList getBackups() {
+        return backups;
     }
 }

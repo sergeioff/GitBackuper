@@ -19,6 +19,7 @@ public class FileDownloader {
         try (ReadableByteChannel rbc = Channels.newChannel(new URL(url).openStream());
             FileOutputStream fos = new FileOutputStream(pathToSave.toFile())) {
             fos.getChannel().transferFrom(rbc, 0 , Long.MAX_VALUE);
+            fos.flush();
         } catch (IOException e) {
             e.printStackTrace(System.err);
         }
