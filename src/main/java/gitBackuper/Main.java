@@ -3,26 +3,16 @@ package gitBackuper;
 import gitBackuper.api.GitHub;
 import gitBackuper.api.models.Repository;
 import gitBackuper.utils.BackupService;
+import gitBackuper.utils.TokenLoader;
 
 import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        Scanner scanner = new Scanner(System.in);
+        String token = TokenLoader.loadToken();
 
-        String token;
-
-
-
-        System.out.println("Enter token or press Enter:");
-        token = scanner.nextLine();
-
-        if (token.length() < 40) {
-            token = null;
-        }
-
-        GitHub gh = new GitHub(token);
+        /*GitHub gh = new GitHub(token);
 
         if (token != null) {
             System.out.printf("Hello, %s!\n", gh.getCurrentUser().getName());
@@ -32,7 +22,7 @@ public class Main {
 
         BackupService bs = new BackupService();
 
-        bs.makeBackupOfRepository(repo);
+        bs.makeBackupOfRepository(repo);*/
 
 //        String repositoryName = "GitBackuper";
 //
