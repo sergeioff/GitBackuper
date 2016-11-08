@@ -24,6 +24,12 @@ public class GitHubTest {
     }
 
     @Test
+    public void linkForRepositoryByUrlTest() {
+        assertEquals("https://api.github.com/repos/sergeioff/GitBackuper",
+                gitHubApi.getLinkForRepository("https://github.com/sergeioff/GitBackuper/tree/master/src"));
+    }
+
+    @Test
     public void linkForRepositoryTest() {
         assertEquals("https://api.github.com/repos/sergeioff/GitBackuper",
                 gitHubApi.getLinkForRepository("sergeioff", "GitBackuper"));

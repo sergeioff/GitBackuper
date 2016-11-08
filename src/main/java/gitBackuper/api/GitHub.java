@@ -11,6 +11,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GitHub {
     private final String API_ROOT = "https://api.github.com/";
@@ -62,6 +64,23 @@ public class GitHub {
         }
 
         return getLinkForRequestWitchToken(link, token);
+    }
+
+    public String getLinkForRepository(String url) {
+        Pattern pattern = Pattern.compile("github.com/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)");
+        Matcher matcher = pattern.matcher(url);
+
+        String username;
+        String repository;
+
+        if (matcher.find()) {
+            username = matcher.group(1);
+            repository = matcher.group(2);
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        return getLinkForRepository(username, repository);
     }
 
     public String getLinkForRepository(String user, String repository) {
