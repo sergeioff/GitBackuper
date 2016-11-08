@@ -2,6 +2,9 @@ package gitBackuper.api.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Represents a GitHub user.
+ */
 public class User {
     @JsonProperty
     private String login;

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
+/**
+ * Content file model. Represents a file from GitHub repository.
+ */
 public class ContentFile implements Serializable {
     @JsonProperty
     private String path;

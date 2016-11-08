@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+/**
+ * Represents a GitHub repository.
+ */
 public class Repository {
-
     @JsonProperty("id")
     private long id;
 
