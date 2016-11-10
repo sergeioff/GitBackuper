@@ -9,7 +9,16 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Allows to download files from internet
+ */
 public class FileDownloader {
+
+    /**
+     * Downloads file from internet to local disk
+     * @param url url for download
+     * @param pathToSave path to save
+     */
     public static void downloadFile(String url, Path pathToSave) {
         File parentDirectory = pathToSave.toFile().getParentFile();
         if (parentDirectory != null) {

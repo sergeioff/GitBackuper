@@ -7,9 +7,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Works with loading token from file
+ */
 public class TokenLoader {
     private static final String TOKEN_FILE_NAME = ".token";
 
+    /**
+     * Loads token from file
+     * @return token
+     */
     public static String loadToken() {
         Path path = Paths.get(TOKEN_FILE_NAME);
 

@@ -6,15 +6,17 @@ import gitBackuper.models.Backup;
 import gitBackuper.models.BackupsList;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Service that provide operations on backups
+ */
 public class BackupService {
     private final String PATH_TO_BACKUPS_FILE = ".backups";
     private final String DIRECTORY_FOR_BACKUPS = ".Backups";
+    private final String DIRECTORY_FOR_ASSEMBLED_BACKUPS = "Backups";
 
     private BackupsList backups;
 
@@ -22,30 +24,11 @@ public class BackupService {
         backups = initBackups();
     }
 
-    private BackupsList initBackups() {
-        Path path = Paths.get(PATH_TO_BACKUPS_FILE);
-
-        if (Files.exists(path)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                return (BackupsList) ois.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-
-        return new BackupsList();
-    }
-
-    private void saveBackups() {
-        Path path = Paths.get(PATH_TO_BACKUPS_FILE);
-
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-            oos.writeObject(backups);
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-        }
-    }
-
+    /**
+     * Checks if the latest backup of repository is already exist
+     * @param repository repository
+     * @return true if exists, or false if not
+     */
     public boolean isBackupExists(Repository repository) {
         List<Backup> existingBackups = backups.getBackups(repository.getName());
 
@@ -60,6 +43,11 @@ public class BackupService {
         return false;
     }
 
+    /**
+     * Makes backup of repository. Downloads files from remote repository to disk
+     * @param repository repository
+     * @throws IOException
+     */
     public void makeBackupOfRepository(Repository repository) throws IOException {
         Path backupsDirectory = Paths.get(DIRECTORY_FOR_BACKUPS);
 
@@ -96,21 +84,66 @@ public class BackupService {
         saveBackups();
     }
 
-/*    private boolean isFileAlreadyBackuped(String repository, ContentFile contentFile) {
-        List<Backup> olderBackups = backups.getBackups(repository);
+    /**
+     * Removes all backups of repository from disk and list of backups.
+     * @param repositoryName repository name
+     * @throws IOException
+     */
+    public void removeRepositoryBackups(String repositoryName) throws IOException {
+        removeDirectory(Paths.get(DIRECTORY_FOR_BACKUPS + "/" + repositoryName));
+        backups.removeBackups(repositoryName);
+    }
 
-        for (Backup backup : olderBackups) {
-            for (ContentFile fileFromBackup : backup.getFiles().keySet()) {
-                if ((contentFile.getPath().equals(fileFromBackup.getPath())) &&
-                        (fileFromBackup.getSha().equals(contentFile.getSha()))) {
-                    return true;
-                }
-            }
+    /**
+     * Assembles backup files on disk from backup
+     * @param backup
+     * @throws IOException
+     */
+    public void assemblyBackup(Backup backup) throws IOException {
+        Path destinationDirectory = Paths.get(DIRECTORY_FOR_ASSEMBLED_BACKUPS + "/" +
+                backup.getRepositoryName() + "/");
+
+        removeDirectory(destinationDirectory);
+        Files.createDirectories(destinationDirectory);
+
+
+        for (File file : backup.getFiles().values()) {
+            Path source = file.toPath();
+            Path destination = Paths.get(destinationDirectory.toString(), file.getName());
+
+
+
+            Files.copy(source, destination);
         }
+    }
 
-        return false;
-    }*/
+    /**
+     * Removes directory on disk
+     * @param directory directory to remove
+     * @throws IOException
+     */
+    public void removeDirectory(Path directory) throws IOException {
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
 
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    /**
+     * Gets associated file on disk for content file from repository
+     * @param repository repository name
+     * @param contentFile content file
+     * @return associated file
+     */
     private File getBackupedFile(String repository, ContentFile contentFile) {
         List<Backup> olderBackups = backups.getBackups(repository);
 
@@ -126,7 +159,41 @@ public class BackupService {
         return null;
     }
 
+    /**
+     * @return list of backups
+     */
     public BackupsList getBackups() {
         return backups;
+    }
+
+    /**
+     * Deserializes list of existing backups from file on disk or if file not exists returns empty backup list
+     * @return backup list
+     */
+    private BackupsList initBackups() {
+        Path path = Paths.get(PATH_TO_BACKUPS_FILE);
+
+        if (Files.exists(path)) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                return (BackupsList) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace(System.err);
+            }
+        }
+
+        return new BackupsList();
+    }
+
+    /**
+     * Serializes list of backups to file on disk
+     */
+    private void saveBackups() {
+        Path path = Paths.get(PATH_TO_BACKUPS_FILE);
+
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
+            oos.writeObject(backups);
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+        }
     }
 }
