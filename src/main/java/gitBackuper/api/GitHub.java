@@ -44,7 +44,7 @@ public class GitHub {
             throw new IllegalStateException();
         }
 
-        String url = urlCreationHelper.getLinkForRequestWitchToken(urlCreationHelper.getLinkForCurrentUser(), token);
+        String url = urlCreationHelper.getLinkForCurrentUser();
 
         return mapper.readValue(new URL(url), User.class);
     }
@@ -58,6 +58,18 @@ public class GitHub {
     public User getUser(String username) throws IOException {
         String linkForUser = urlCreationHelper.getLinkForUser(username);
         return mapper.readValue(new URL(linkForUser), User.class);
+    }
+
+    /**
+     * Get list of user repositories
+     * @param username username
+     * @return list of repositories
+     * @throws IOException if there are problems with url connection
+     */
+    public List<Repository> getUserRepositories(String username) throws IOException {
+        String linkForRepositories = urlCreationHelper.getLinkForUserRepos(username);
+        return mapper.readValue(new URL(linkForRepositories), mapper.getTypeFactory()
+                .constructCollectionType(List.class, Repository.class));
     }
 
     /**
@@ -160,7 +172,11 @@ public class GitHub {
          * @return url for request
          */
         private String getLinkForCurrentUser() {
-            return CURRENT_USER;
+            if (null == token) {
+                throw new IllegalStateException();
+            }
+
+            return getLinkForRequestWitchToken(CURRENT_USER, token);
         }
 
         /**
@@ -180,16 +196,6 @@ public class GitHub {
 
         /**
          * Makes url to request repository via GitHub API
-         * @param url url of repository
-         * @return url for request
-         */
-        private String getLinkForRepository(String url) {
-            RepositoryAndOwner parsingResult = getRepositoryAndOwner(url);
-            return getLinkForRepository(parsingResult.ownerName, parsingResult.repositoryName);
-        }
-
-        /**
-         * Makes url to request repository via GitHub API
          * @param user repository owner
          * @param repository repository name
          * @return url for request
@@ -202,16 +208,6 @@ public class GitHub {
             }
 
             return getLinkForRequestWitchToken(link, token);
-        }
-
-        /**
-         * Makes url to request repository via GitHub API
-         * @param url url of repository
-         * @return url for request
-         */
-        private String getLinkForRepositoryContents(String url) {
-            RepositoryAndOwner parsingResult = getRepositoryAndOwner(url);
-            return getLinkForRepositoryContents(parsingResult.ownerName, parsingResult.repositoryName);
         }
 
         /**
@@ -259,7 +255,7 @@ public class GitHub {
                 throw new IllegalArgumentException();
             }
 
-            return new RepositoryAndOwner(username, repository);
+            return new RepositoryAndOwner(repository, username);
         }
 
         /**
