@@ -45,7 +45,7 @@ public class GitHubTest {
 
     @Test
     public void getUserRepositories() throws IOException {
-        List<Repository> repos = unauthorizedGitHub.getUserRepositories(REPOSITORY_OWNER);
+        List<Repository> repos = unauthorizedGitHub.getUserRepositoriesWithoutFiles(REPOSITORY_OWNER);
         assertTrue(repos.size() > 0);
         assertTrue(repos.stream().filter(r -> r.getName().equals(REPOSITORY_NAME)).count() > 0);
     }

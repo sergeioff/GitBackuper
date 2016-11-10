@@ -61,12 +61,12 @@ public class GitHub {
     }
 
     /**
-     * Get list of user repositories
+     * Get list of user repositories without content files.
      * @param username username
      * @return list of repositories
      * @throws IOException if there are problems with url connection
      */
-    public List<Repository> getUserRepositories(String username) throws IOException {
+    public List<Repository> getUserRepositoriesWithoutFiles(String username) throws IOException {
         String linkForRepositories = urlCreationHelper.getLinkForUserRepos(username);
         return mapper.readValue(new URL(linkForRepositories), mapper.getTypeFactory()
                 .constructCollectionType(List.class, Repository.class));
