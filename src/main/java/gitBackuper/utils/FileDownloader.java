@@ -1,28 +1,28 @@
 package gitBackuper.utils;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Allows to download files from internet
  */
-public class FileDownloader {
+class FileDownloader {
 
     /**
      * Downloads file from internet to local disk
      * @param url url for download
      * @param pathToSave path to save
+     * @throws IOException IOException while creating directories
      */
-    public static void downloadFile(String url, Path pathToSave) {
-        File parentDirectory = pathToSave.toFile().getParentFile();
+    static void downloadFile(String url, Path pathToSave) throws IOException {
+        Path parentDirectory = pathToSave.getParent();
         if (parentDirectory != null) {
-            parentDirectory.mkdirs(); //Creation of parent directories
+            Files.createDirectories(parentDirectory);
         }
 
         try (ReadableByteChannel rbc = Channels.newChannel(new URL(url).openStream());
