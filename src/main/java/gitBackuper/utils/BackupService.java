@@ -9,6 +9,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service that provide operations on backups
@@ -46,7 +48,7 @@ public class BackupService {
     /**
      * Makes backup of repository. Downloads files from remote repository to disk
      * @param repository repository
-     * @throws IOException
+     * @throws IOException IOException while downloading files
      */
     public void makeBackupOfRepository(Repository repository) throws IOException {
         Path backupsDirectory = Paths.get(DIRECTORY_FOR_BACKUPS);
@@ -87,17 +89,29 @@ public class BackupService {
     /**
      * Removes all backups of repository from disk and list of backups.
      * @param repositoryName repository name
-     * @throws IOException
+     * @throws IOException IOException while removing backups
      */
     public void removeRepositoryBackups(String repositoryName) throws IOException {
         removeDirectory(Paths.get(DIRECTORY_FOR_BACKUPS + "/" + repositoryName));
         backups.removeBackups(repositoryName);
+        saveBackups();
+    }
+
+    /**
+     * Removes all backups of all repositories
+     * @throws IOException IOException while deleting files
+     */
+    public void removeAllBackups() throws IOException {
+        backups.getBackups().clear();
+        removeDirectory(Paths.get(DIRECTORY_FOR_BACKUPS));
+        removeDirectory(Paths.get(DIRECTORY_FOR_ASSEMBLED_BACKUPS));
+        Files.delete(Paths.get(PATH_TO_BACKUPS_FILE));
     }
 
     /**
      * Assembles backup files on disk from backup
-     * @param backup
-     * @throws IOException
+     * @param backup backup
+     * @throws IOException IOException while copying files
      */
     public void assemblyBackup(Backup backup) throws IOException {
         Path destinationDirectory = Paths.get(DIRECTORY_FOR_ASSEMBLED_BACKUPS + "/" +
@@ -106,12 +120,24 @@ public class BackupService {
         removeDirectory(destinationDirectory);
         Files.createDirectories(destinationDirectory);
 
+        Pattern pattern = Pattern.compile(DIRECTORY_FOR_BACKUPS + '/' + backup.getRepositoryName() + '/' +
+            backup.getPushedAt() + '/' + "(.*)");
 
         for (File file : backup.getFiles().values()) {
             Path source = file.toPath();
-            Path destination = Paths.get(destinationDirectory.toString(), file.getName());
+            Matcher matcher = pattern.matcher(file.getPath());
 
+            if (!matcher.find()) {
+                throw new IllegalStateException();
+            }
 
+            String filePath = matcher.group(1);
+            Path destination = Paths.get(destinationDirectory.toString(), filePath);
+            Path destinationFolder = destination.getParent();
+
+            if (Files.notExists(destinationFolder)) {
+                Files.createDirectories(destinationFolder);
+            }
 
             Files.copy(source, destination);
         }
@@ -120,9 +146,13 @@ public class BackupService {
     /**
      * Removes directory on disk
      * @param directory directory to remove
-     * @throws IOException
+     * @throws IOException IOException while removing files
      */
-    public void removeDirectory(Path directory) throws IOException {
+    private void removeDirectory(Path directory) throws IOException {
+        if (Files.notExists(directory)) {
+            return;
+        }
+
         Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
