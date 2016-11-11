@@ -6,11 +6,12 @@ import gitBackuper.utils.TokenLoader;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class GitHubTest {
     private static final String REPOSITORY_NAME = "GitBackuper";
@@ -35,12 +36,12 @@ public class GitHubTest {
 
     @Test(expected = IllegalStateException.class)
     public void getCurrentUserWillFailTest() throws IOException {
-        User user = unauthorizedGitHub.getCurrentUser();
+        unauthorizedGitHub.getCurrentUser();
     }
 
     @Test(expected = FileNotFoundException.class)
     public void getUserWillFailTest() throws IOException {
-        User user = unauthorizedGitHub.getUser("NonExistingUser");
+        unauthorizedGitHub.getUser("NonExistingUser");
     }
 
     @Test
