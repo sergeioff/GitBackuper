@@ -5,7 +5,6 @@ import gitBackuper.api.models.ContentFile;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -25,10 +24,19 @@ public class Backup implements Serializable {
         this.pushedAt = pushedAt;
     }
 
+    /**
+     * Adds association content file -> file on disk to backup
+     * @param contentFile content file
+     * @param file file on disk
+     */
     public void addFile(ContentFile contentFile, File file) {
         files.put(contentFile, file);
     }
 
+    /**
+     * Getter for backup files
+     * @return content files of backup associated to files on disk
+     */
     public Map<ContentFile, File> getFiles() {
         return files;
     }

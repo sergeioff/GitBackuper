@@ -52,6 +52,14 @@ public class BackupsList implements Serializable {
         return backups.get(repositoryName);
     }
 
+    /**
+     * Gets all backups for all repositories
+     * @return map of Repository -> Backup
+     */
+    public Map<String, List<Backup>> getBackups() {
+        return backups;
+    }
+
     @Override
     public String toString() {
         return backups.values().toString();
