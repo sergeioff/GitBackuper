@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Represents a GitHub user.
  */
+@SuppressWarnings("UnusedDeclaration")
 public class User {
     @JsonProperty
     private String login;

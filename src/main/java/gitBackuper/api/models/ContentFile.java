@@ -7,6 +7,7 @@ import java.io.Serializable;
 /**
  * Content file model. Represents a file from GitHub repository.
  */
+@SuppressWarnings("UnusedDeclaration")
 public class ContentFile implements Serializable {
     @JsonProperty
     private String path;
