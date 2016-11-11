@@ -103,9 +103,13 @@ public class BackupService {
      */
     public void removeAllBackups() throws IOException {
         backups.getBackups().clear();
-        removeDirectory(Paths.get(DIRECTORY_FOR_BACKUPS));
-        removeDirectory(Paths.get(DIRECTORY_FOR_ASSEMBLED_BACKUPS));
-        Files.delete(Paths.get(PATH_TO_BACKUPS_FILE));
+        try {
+            removeDirectory(Paths.get(DIRECTORY_FOR_BACKUPS));
+            removeDirectory(Paths.get(DIRECTORY_FOR_ASSEMBLED_BACKUPS));
+            Files.delete(Paths.get(PATH_TO_BACKUPS_FILE));
+        } catch (NoSuchFileException e) {
+            //Do nothing
+        }
     }
 
     /**
