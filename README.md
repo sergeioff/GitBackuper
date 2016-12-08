@@ -3,6 +3,10 @@
 Program that provides functionality for backup remote repositories from GitHub to local disk without _git_ client.
 Makes incremental backups, that are keeping changes between backups.
 
+## Get:
+
+If you wouldn't like to build jar from sources, you can download _jar_ from [release page](https://github.com/sergeioff/GitBackuper/releases).
+
 ## Build:
 
 Build executable _jar_ from sources:
